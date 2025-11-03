@@ -7,9 +7,10 @@ const API_BASE = "https://chainers.io/api/farm";
 
 // isi manual sesuai jumlah plot (harus urut sama urutan bed)
 const seedIDs = [
-    "673e0c942c7bfd708b352447", // uncommon strawberry
-    "673e0c942c7bfd708b35245f", // peas
+    // "673e0c942c7bfd708b352447", // uncommon strawberry
+    // "673e0c942c7bfd708b35245f", // peas
     "673e0c942c7bfd708b352441", // common strawberry
+    "673e0c942c7bfd708b35244d" // Rare strawberry
 ];
 
 // === API Helpers ===
