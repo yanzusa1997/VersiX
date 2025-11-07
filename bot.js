@@ -9,6 +9,7 @@ const API_BASE = "https://chainers.io/api/farm";
 const seedIDs = [
     // "673e0c942c7bfd708b352447", // uncommon strawberry
     // "673e0c942c7bfd708b35245f", // peas
+    "67dc227a59b878f195998e24", // sweet potato
     "673e0c942c7bfd708b352441", // common strawberry
     "673e0c942c7bfd708b35244d" // Rare strawberry
 ];
