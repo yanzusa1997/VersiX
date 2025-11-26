@@ -12,7 +12,7 @@ const LOG_FILE = path.join(LOG_DIR, "bot.log");
 // Rotation config:
 // jika true -> pakai seedMap (seed per bed berdasarkan index bed yang di-return oleh API)
 // jika false -> pakai seedPool (pool yang di-rotate per bed menggunakan pointer per bed)
-const MAP_PER_BED = true;
+const MAP_PER_BED = false;
 
 // Jika MAP_PER_BED = true, isi seedMap sesuai jumlah bed (string|null) e.g.
 // const seedMap = ["seedIdBed0", "seedIdBed1", null]; // null = skip bed
