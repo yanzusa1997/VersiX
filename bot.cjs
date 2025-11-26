@@ -201,7 +201,7 @@ async function waitForSeed(seedID, bed) {
 
 async function plantSeed(userGardensID, userBedsID, seedID) {
   try {
-    const status = await waitForSeed(seedID, bed);
+    const status = await waitForSeed(seedID, userBedsID);
       if (status === "skip") return null; // jangan paksa tanam
 
     // random small delay sebelum request untuk anti-ban
