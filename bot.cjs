@@ -195,12 +195,7 @@ async function waitForSeed(seedID, bed) {
   // GAGAL
   // ==========
   log("error", `Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan → skip`);
-  return "skip";
-}
-
-
-  log("error", `Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan → skip`);
-  await sendTelegram(`⛔ Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan. Skip menanam.`);
+    await sendTelegram(`⛔ Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan. Skip menanam.`);
   return "skip";
 }
 
