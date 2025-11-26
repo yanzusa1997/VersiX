@@ -146,39 +146,58 @@ async function harvestSeed(userFarmingID, bedID) {
  * waitForSeed with bounded retries and skip logic
  * returns: "active" | "skip"
  */
-async function waitForSeed(seedID) {
+async function waitForSeed(seedID, bed) {
   let retry = 0;
+
   while (retry < WAIT_MAX_RETRY) {
-    try {
-      const inventory = await getInventory();
-      const item = inventory.find(i => i.itemID === seedID);
-      if (!item) {
-        retry++;
-        log("warn", `Seed ${seedID} tidak ada di inventory (${retry}/${WAIT_MAX_RETRY})`);
-        // jika sudah beberapa kali coba, beri jeda lebih lama
-        if (retry >= WAIT_MISSING_RETRY_LIMIT) {
-          await sleep(30000 + Math.floor(Math.random() * 20000)); // 30-50s
-        } else {
-          await sleep(10000 + Math.floor(Math.random() * 5000)); // 10-15s
-        }
-        continue;
+    const inventory = await getInventory();
+    const item = inventory.find(i => i.itemID === seedID);
+
+    // ==========================
+    // 1. SEED TIDAK ADA DI INVENTORY
+    // ==========================
+    if (!item) {
+      retry++;
+      log("warn", `Seed ${seedID} tidak ada di inventory (${retry}/${WAIT_MAX_RETRY})`);
+
+      // ➤ FIX: CEK ULANG BED, BISA JADI SEDANG TANAM!
+      const garden = await getGardens();
+      const freshBed = garden.placedBeds.find(b => b.userBedsID === bed.userBedsID);
+
+      if (freshBed && freshBed.plantedSeed) {
+        log("info", `Bed ${bed.userBedsID} masih sedang menanam ${freshBed.plantedSeed.seedCode} → skip planting`);
+        return "skip";
       }
 
-      if (item.inventoryType === "active") {
-        log("info", `Seed ${item.itemCode} (${seedID}) aktif`);
-        return "active";
-      } else {
-        retry++;
-        log("info", `Seed ${item.itemCode} status ${item.inventoryType} (${retry}/${WAIT_MAX_RETRY}). Menunggu...`);
-        // tunggu 20-40s
-        await sleep(20000 + Math.floor(Math.random() * 20000));
-      }
-    } catch (err) {
-      retry++;
-      log("warn", "Error cek inventory:", err.message, `(${retry}/${WAIT_MAX_RETRY})`);
-      await sleep(5000 + Math.floor(Math.random() * 5000));
+      // jika seed memang tidak ada → tunggu
+      await sleep(10000 + Math.floor(Math.random() * 3000));
+      continue;
     }
+
+    // ====================================
+    // 2. SEED ADA, TAPI BELUM ACTIVE
+    // ====================================
+    if (item.inventoryType !== "active") {
+      retry++;
+      log("info", `Seed ${item.itemCode} status ${item.inventoryType} (${retry}/${WAIT_MAX_RETRY}). Menunggu aktif...`);
+      await sleep(15000 + Math.floor(Math.random() * 15000));
+      continue;
+    }
+
+    // ==================
+    // 3. SEED SIAP!
+    // ==================
+    log("info", `Seed ${item.itemCode} sudah ACTIVE`);
+    return "active";
   }
+
+  // ==========
+  // GAGAL
+  // ==========
+  log("error", `Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan → skip`);
+  return "skip";
+}
+
 
   log("error", `Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan → skip`);
   await sendTelegram(`⛔ Seed ${seedID} tidak aktif setelah ${WAIT_MAX_RETRY} percobaan. Skip menanam.`);
@@ -187,8 +206,8 @@ async function waitForSeed(seedID) {
 
 async function plantSeed(userGardensID, userBedsID, seedID) {
   try {
-    const status = await waitForSeed(seedID);
-    if (status === "skip") return null;
+    const status = await waitForSeed(seedID, bed);
+      if (status === "skip") return null; // jangan paksa tanam
 
     // random small delay sebelum request untuk anti-ban
     await randDelay();
