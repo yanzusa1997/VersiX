@@ -7,7 +7,7 @@ const REQ_TOKEN = "9a7c210a88af797a"; // NEW REQUIRED
 
 // Sesuaikan urutan bed (bed[0] pakai seedIDs[0])
 const seedIDs = [
-    "67dc227a59b878f195998e24",
+    "673e0c942c7bfd708b352441",
     "673e0c942c7bfd708b35244d",
     "673e0c942c7bfd708b35245f",
 ];
