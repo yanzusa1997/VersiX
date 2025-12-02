@@ -170,6 +170,30 @@ async function handleBeds(garden) {
 
         await sleep(500); // delay antar bed
     }
+        // === Hitung next wake time ===
+    let nextWake = 999999; // default sangat besar
+
+    for (let i = 0; i < beds.length && i < seedIDs.length; i++) {
+        const bed = beds[i];
+        const farming = bed.plantedSeed;
+
+        if (!farming) continue; // bed kosong tidak dihitung
+
+        const harvestTime =
+            new Date(farming.plantedDate).getTime() + farming.growthTime * 1000;
+
+        const sisa = Math.floor((harvestTime - Date.now()) / 1000);
+        if (sisa > 0 && sisa < nextWake) nextWake = sisa;
+    }
+
+    if (nextWake === 999999) {
+        console.log("🌙 Semua bed kosong / baru panen → sleep default 30 detik.\n");
+        return 30;
+    }
+
+    console.log(`😴 Sleep sampai bed terdekat matang (${nextWake}s)...\n`);
+    return nextWake + 3; // buffer 3 detik
+
 }
 
 // === MAIN LOOP ===
@@ -177,15 +201,15 @@ async function startBot() {
     while (true) {
         try {
             const garden = await getGardens();
-            await handleBeds(garden);
+            const nextSleep = await handleBeds(garden);
 
-            console.log("⏳ Sleep 45–60 detik\n");
-            await sleep(45000 + Math.random() * 15000);
-        } catch (e) {
-            console.log("❌ Error:", e.message);
-            await sleep(5000);
+            console.log(`⏳ Sleep ${nextSleep}s\n`);
+            await new Promise(r => setTimeout(r, nextSleep * 1000));
+
+        } catch (err) {
+            console.error("❌ Runtime error:", err.message);
+            await new Promise(r => setTimeout(r, 10000));
         }
     }
 }
-
 startBot();
